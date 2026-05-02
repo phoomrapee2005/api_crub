@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const mysql = require('mysql2')
 require('dotenv').config()
+
 const app = express()
 
 app.use(cors())
@@ -13,56 +14,96 @@ app.get('/', (req, res) => {
     res.send('Hello world!!')
 })
 
-app.get('/users', (req, res) => {
+// READ all cars
+app.get('/cars', (req, res) => {
     connection.query(
-        'SELECT * FROM users',
+        'SELECT * FROM cars',
         function (err, results, fields) {
-            res.send(results)
-        }
-    )
-})
-
-app.get('/users/:id', (req, res) => {
-    const id = req.params.id;
-    connection.query(
-        'SELECT * FROM users WHERE id = ?', [id],
-        function (err, results, fields) {
-            res.send(results)
-        }
-    )
-})
-
-app.post('/users', (req, res) => {
-    connection.query(
-        'INSERT INTO `users` (`fname`, `lname`, `username`, `password`, `avatar`) VALUES (?, ?, ?, ?, ?)',
-        [req.body.fname, req.body.lname, req.body.username, req.body.password, req.body.avatar],
-         function (err, results, fields) {
             if (err) {
-                console.error('Error in POST /users:', err);
-                res.status(500).send('Error adding user');
+                console.error('Error in GET /cars:', err)
+                res.status(500).send('Error getting cars')
             } else {
-                res.status(200).send(results);
+                res.send(results)
             }
         }
     )
 })
 
-app.put('/users', (req, res) => {
+// READ car by id
+app.get('/cars/:id', (req, res) => {
+    const id = req.params.id
+
     connection.query(
-        'UPDATE `users` SET `fname`=?, `lname`=?, `username`=?, `password`=?, `avatar`=? WHERE id =?',
-        [req.body.fname, req.body.lname, req.body.username, req.body.password, req.body.avatar, req.body.id],
-         function (err, results, fields) {
-            res.send(results)
+        'SELECT * FROM cars WHERE id = ?',
+        [id],
+        function (err, results, fields) {
+            if (err) {
+                console.error('Error in GET /cars/:id:', err)
+                res.status(500).send('Error getting car')
+            } else {
+                res.send(results)
+            }
         }
     )
 })
 
-app.delete('/users', (req, res) => {
+// CREATE car
+app.post('/cars', (req, res) => {
     connection.query(
-        'DELETE FROM `users` WHERE id =?',
+        'INSERT INTO `cars` (`name`, `detail`, `coverimage`, `price`, `brand`) VALUES (?, ?, ?, ?, ?)',
+        [
+            req.body.name,
+            req.body.detail,
+            req.body.coverimage,
+            req.body.price,
+            req.body.brand
+        ],
+        function (err, results, fields) {
+            if (err) {
+                console.error('Error in POST /cars:', err)
+                res.status(500).send('Error adding car')
+            } else {
+                res.status(200).send(results)
+            }
+        }
+    )
+})
+
+// UPDATE car
+app.put('/cars', (req, res) => {
+    connection.query(
+        'UPDATE `cars` SET `name`=?, `detail`=?, `coverimage`=?, `price`=?, `brand`=? WHERE id = ?',
+        [
+            req.body.name,
+            req.body.detail,
+            req.body.coverimage,
+            req.body.price,
+            req.body.brand,
+            req.body.id
+        ],
+        function (err, results, fields) {
+            if (err) {
+                console.error('Error in PUT /cars:', err)
+                res.status(500).send('Error updating car')
+            } else {
+                res.send(results)
+            }
+        }
+    )
+})
+
+// DELETE car
+app.delete('/cars', (req, res) => {
+    connection.query(
+        'DELETE FROM `cars` WHERE id = ?',
         [req.body.id],
-         function (err, results, fields) {
-            res.send(results)
+        function (err, results, fields) {
+            if (err) {
+                console.error('Error in DELETE /cars:', err)
+                res.status(500).send('Error deleting car')
+            } else {
+                res.send(results)
+            }
         }
     )
 })
@@ -72,4 +113,4 @@ app.listen(process.env.PORT || 3000, () => {
 })
 
 // export the app for vercel serverless functions
-module.exports = app;
+module.exports = app
